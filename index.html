@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages Test - Album Shuffler</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1db954, #191414);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            text-align: center;
+            max-width: 600px;
+            padding: 2rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(45deg, #1db954, #1ed760);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+        
+        .status {
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            background: rgba(29, 185, 84, 0.2);
+            border: 1px solid #1db954;
+        }
+        
+        .next-steps {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            text-align: left;
+        }
+        
+        .next-steps h3 {
+            margin-bottom: 1rem;
+            color: #1db954;
+        }
+        
+        .next-steps ol {
+            margin-left: 1.5rem;
+        }
+        
+        .next-steps li {
+            margin-bottom: 0.5rem;
+            line-height: 1.5;
+        }
+        
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+        
+        footer {
+            margin-top: 2rem;
+            opacity: 0.6;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Album Shuffler</h1>
+        <p class="subtitle">Shuffle your albums, not just your songs</p>
+        
+        <div class="status">
+            <span class="emoji">✅</span>
+            <strong>GitHub Pages is working!</strong><br>
+            Your site is successfully deployed and accessible.
+        </div>
+        
+        <div class="next-steps">
+            <h3>🚀 Next Steps:</h3>
+            <ol>
+                <li>Set up your React development environment</li>
+                <li>Register your app with Spotify Developer Dashboard</li>
+                <li>Implement Spotify OAuth with PKCE flow</li>
+                <li>Fetch user's saved albums via Spotify API</li>
+                <li>Build the album shuffle logic</li>
+                <li>Deploy your React build to replace this test page</li>
+            </ol>
+        </div>
+        
+        <footer>
+            Ready to build something awesome! 🎧
+        </footer>
+    </div>
+</body>
+</html>
