@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Background from './components/Background.tsx';
+import SpotifyLogin from './components/SpotifyLogin.tsx';
 
 interface NextStep {
   id: number;
@@ -7,10 +8,16 @@ interface NextStep {
 }
 
 const App: React.FC = () => {
+  const [user, setUser] = useState<any>(null);
+
+  const handleLoginSuccess = (userInfo: any) => {
+    setUser(userInfo);
+  };
+
   const nextSteps: NextStep[] = [
-    { id: 1, text: "Set up your React development environment" },
-    { id: 2, text: "Register your app with Spotify Developer Dashboard" },
-    { id: 3, text: "Implement Spotify OAuth with PKCE flow" },
+    { id: 1, text: "Set up your React development environment ✅" },
+    { id: 2, text: "Register your app with Spotify Developer Dashboard ✅" },
+    { id: 3, text: "Implement Spotify OAuth with PKCE flow ✅" },
     { id: 4, text: "Fetch user's saved albums via Spotify API" },
     { id: 5, text: "Build the album shuffle logic" },
     { id: 6, text: "Deploy your React build to replace this test page" }
@@ -27,11 +34,8 @@ const App: React.FC = () => {
           Shuffle your albums, not just your songs
         </p>
         
-        <div className="p-4 mb-6 rounded-lg bg-spotify-green/20 border border-spotify-green">
-          <span className="text-2xl mr-2">✅</span>
-          <strong>GitHub Pages is working!</strong>
-          <br />
-          Your site is successfully deployed and accessible.
+        <div className="mb-6">
+          <SpotifyLogin onLoginSuccess={handleLoginSuccess} />
         </div>
         
         <div className="mt-8 p-6 bg-white/5 rounded-lg text-left">
