@@ -3,36 +3,48 @@ import { SpotifyAuth } from '../services/spotifyAuth.ts';
 
 interface SpotifyLoginProps {
   onLoginSuccess: (userInfo: any) => void;
+  onLogout: () => void;
 }
 
-const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess }) => {
+const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess, onLogout }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
+    let mounted = true;
+
     const handleAuthCallback = async () => {
+      if (!mounted) return;
       setIsLoading(true);
       setError(null);
 
       try {
         await SpotifyAuth.handleCallback();
-        await testConnection();
+        if (!mounted) return;
+        const user = await SpotifyAuth.testConnection();
+        if (!mounted) return;
+        setUserInfo(user);
+        onLoginSuccess(user);
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
       } catch (err) {
+        if (!mounted) return;
         setError(err instanceof Error ? err.message : 'Authentication failed');
       } finally {
-        setIsLoading(false);
+        if (mounted) setIsLoading(false);
       }
     };
 
     const testConnection = async () => {
+      if (!mounted) return;
       try {
         const user = await SpotifyAuth.testConnection();
+        if (!mounted) return;
         setUserInfo(user);
         onLoginSuccess(user);
       } catch (err) {
+        if (!mounted) return;
         setError(err instanceof Error ? err.message : 'Failed to connect to Spotify');
       }
     };
@@ -41,11 +53,15 @@ const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess }) => {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('code')) {
       handleAuthCallback();
-    } else if (SpotifyAuth.isLoggedIn()) {
-      // Already logged in, test the connection
+    } else if (SpotifyAuth.isLoggedIn() && !userInfo) {
+      // Only test connection if we don't already have user info
       testConnection();
     }
-  }, [onLoginSuccess]);
+
+    return () => {
+      mounted = false;
+    };
+  }, [onLoginSuccess, userInfo]);
 
 
   const handleLogin = async () => {
@@ -60,10 +76,18 @@ const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess }) => {
     }
   };
 
+  // Reset loading state when component mounts (e.g., when navigating back)
+  useEffect(() => {
+    if (!SpotifyAuth.isLoggedIn() && !new URLSearchParams(window.location.search).get('code')) {
+      setIsLoading(false);
+    }
+  }, []);
+
   const handleLogout = () => {
     SpotifyAuth.logout();
     setUserInfo(null);
     setError(null);
+    onLogout();
   };
 
   if (isLoading) {

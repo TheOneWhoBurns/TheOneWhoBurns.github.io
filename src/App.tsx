@@ -14,6 +14,10 @@ const App: React.FC = () => {
     setUser(userInfo);
   };
 
+  const handleLogout = () => {
+    setUser(null);
+  };
+
   const nextSteps: NextStep[] = [
     { id: 1, text: "Set up your React development environment ✅" },
     { id: 2, text: "Register your app with Spotify Developer Dashboard ✅" },
@@ -35,7 +39,7 @@ const App: React.FC = () => {
         </p>
         
         <div className="mb-6">
-          <SpotifyLogin onLoginSuccess={handleLoginSuccess} />
+          <SpotifyLogin onLoginSuccess={handleLoginSuccess} onLogout={handleLogout} />
         </div>
         
         {user && (
