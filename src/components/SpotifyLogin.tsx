@@ -11,6 +11,32 @@ const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess }) => {
   const [userInfo, setUserInfo] = useState<any>(null);
 
   useEffect(() => {
+    const handleAuthCallback = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        await SpotifyAuth.handleCallback();
+        await testConnection();
+        // Clean URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Authentication failed');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const testConnection = async () => {
+      try {
+        const user = await SpotifyAuth.testConnection();
+        setUserInfo(user);
+        onLoginSuccess(user);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to connect to Spotify');
+      }
+    };
+
     // Check if we're returning from Spotify auth
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.get('code')) {
@@ -19,33 +45,8 @@ const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess }) => {
       // Already logged in, test the connection
       testConnection();
     }
-  }, []);
+  }, [onLoginSuccess]);
 
-  const handleAuthCallback = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      await SpotifyAuth.handleCallback();
-      await testConnection();
-      // Clean URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Authentication failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const testConnection = async () => {
-    try {
-      const user = await SpotifyAuth.testConnection();
-      setUserInfo(user);
-      onLoginSuccess(user);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to connect to Spotify');
-    }
-  };
 
   const handleLogin = async () => {
     setIsLoading(true);

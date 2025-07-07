@@ -8,7 +8,7 @@ interface NextStep {
 }
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<any>(null);
+  const [, setUser] = useState<any>(null);
 
   const handleLoginSuccess = (userInfo: any) => {
     setUser(userInfo);
