@@ -8,7 +8,7 @@ interface NextStep {
 }
 
 const App: React.FC = () => {
-  const [, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null);
 
   const handleLoginSuccess = (userInfo: any) => {
     setUser(userInfo);
@@ -38,8 +38,31 @@ const App: React.FC = () => {
           <SpotifyLogin onLoginSuccess={handleLoginSuccess} />
         </div>
         
+        {user && (
+          <div className="mb-6 p-6 bg-green-900/20 rounded-lg border border-green-500/50">
+            <h3 className="text-xl font-bold text-green-400 mb-4">🎯 User Data Test Success!</h3>
+            <div className="text-left space-y-2 text-sm">
+              <p><strong>Display Name:</strong> {user.display_name || 'N/A'}</p>
+              <p><strong>Email:</strong> {user.email || 'N/A'}</p>
+              <p><strong>User ID:</strong> {user.id}</p>
+              <p><strong>Followers:</strong> {user.followers?.total || 0}</p>
+              <p><strong>Country:</strong> {user.country || 'N/A'}</p>
+              <p><strong>Subscription:</strong> {user.product || 'N/A'}</p>
+              {user.images && user.images[0] && (
+                <div className="mt-3">
+                  <img 
+                    src={user.images[0].url} 
+                    alt="Profile" 
+                    className="w-16 h-16 rounded-full"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        
         <div className="mt-8 p-6 bg-white/5 rounded-lg text-left">
-          <h3 className="mb-4 text-spotify-green font-semibold text-lg">
+          <h3 className="mb-4 text-green-400 font-semibold text-lg">
             🚀 Next Steps:
           </h3>
           <ol className="ml-6 space-y-2">
