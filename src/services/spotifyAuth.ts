@@ -1,6 +1,6 @@
 // Spotify OAuth 2.0 with PKCE flow
 const CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID || "";
-const REDIRECT_URI = window.location.origin + '/callback';
+const REDIRECT_URI = 'https://theonewhoburns.github.io/callback';
 const SCOPES = [
   'user-read-private',
   'user-read-email',
