@@ -1,4 +1,5 @@
 import React from 'react';
+import Background from './components/Background';
 
 interface NextStep {
   id: number;
@@ -16,7 +17,8 @@ const App: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-spotify-green to-spotify-dark text-white font-sans">
+    <div className="min-h-screen flex items-center justify-center text-white font-sans relative">
+      <Background />
       <div className="text-center max-w-2xl p-8 bg-black/30 rounded-2xl backdrop-blur-sm border border-white/10">
         <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-spotify-green to-spotify-green-light bg-clip-text text-transparent">
           🎵 Album Shuffler
