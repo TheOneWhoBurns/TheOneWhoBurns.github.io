@@ -15,7 +15,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "npm run build:css && react-scripts build",
-    "build:css": "npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind.css",
+    "build:css": "npx @tailwindcss/cli -i ./src/index.css -o ./src/tailwind.css && sed -i.bak 's/calc(infinity \\* 1px)/9999px/g' ./src/tailwind.css && rm -f ./src/tailwind.css.bak",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

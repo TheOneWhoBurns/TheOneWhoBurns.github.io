@@ -36,6 +36,7 @@ jobs:
       run: npm run build
       env:
         REACT_APP_SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+        CI: false
       
     - name: Setup Pages
       uses: actions/configure-pages@v4
