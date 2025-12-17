@@ -9,7 +9,7 @@ const Background: React.FC = () => {
 
     let isReversing = false;
     let animationId: number | null = null;
-    const playbackSpeed = 0.25;
+    const playbackSpeed = 0.5;
 
     video.playbackRate = playbackSpeed;
 

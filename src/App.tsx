@@ -1,13 +1,20 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef } from 'react';
 import Background from './components/Background.tsx';
 import SpotifyLogin from './components/SpotifyLogin.tsx';
 import { SpotifyAuth } from './services/spotifyAuth.ts';
-
+import { useVirtualizer } from '@tanstack/react-virtual';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
-
   const [albums, setAlbums] = useState<any[]>([]);
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const virtualizer = useVirtualizer({
+    count: albums.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 50,
+    overscan: 5,
+  });
 
 
   const handleLoginSuccess = useCallback((userInfo: any) => {
@@ -30,7 +37,6 @@ const App: React.FC = () => {
     setAlbums(albumsData);
   
   };
-
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white font-sans relative">
@@ -81,13 +87,16 @@ const App: React.FC = () => {
             {albums.length > 0 && (
               <div className="mt-6 text-left">
                 <h3 className="text-xl font-bold mb-4">User Albums ({albums.length}):</h3>
-                <ul className = "space-y-1">
-                  {albums.map((item) => (
-                    <li key={item.id} className="border-b border-white/10 pb-2 mb-2">
-                      <p><strong>{item.album.name}</strong> by {item.album.artists.map((a: any) => a.name).join(', ')}</p>
-                    </li>
-                  ))}
-                </ul>
+                <div ref={parentRef} className="border border-white/10 rounded-lg overflow-auto" style={{ height: 400 }}>
+                  <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
+                    {virtualizer.getVirtualItems().map((row) => (
+                      <div key={row.index} className="p-2 border-b border-white/10 absolute w-full" style={{ height: row.size, transform: `translateY(${row.start}px)` }}>
+                        <strong>{albums[row.index].album.name}</strong> by {albums[row.index].album.artists.map((a: any) => a.name).join(', ')}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
               </div>
             )}  
           </div>
