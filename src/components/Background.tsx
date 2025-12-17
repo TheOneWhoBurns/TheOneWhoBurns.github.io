@@ -36,11 +36,11 @@ const Background: React.FC = () => {
   }, []);
 
   return (
-    <div className="fixed inset-0 -z-10 overflow-hidden">
+    <div className="fixed inset-0 -z-10 overflow-hidden bg-black">
       <video
         ref={forwardRef}
-        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-100 ${
-          activeVideo === 'forward' ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 w-full h-full object-cover ${
+          activeVideo === 'forward' ? 'block' : 'hidden'
         }`}
         muted
         playsInline
@@ -50,8 +50,8 @@ const Background: React.FC = () => {
       </video>
       <video
         ref={reverseRef}
-        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-100 ${
-          activeVideo === 'reverse' ? 'opacity-100' : 'opacity-0'
+        className={`absolute inset-0 w-full h-full object-cover ${
+          activeVideo === 'reverse' ? 'block' : 'hidden'
         }`}
         muted
         playsInline
