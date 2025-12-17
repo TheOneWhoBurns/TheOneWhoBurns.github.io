@@ -84,7 +84,7 @@ const App: React.FC = () => {
                 <ul className = "space-y-1">
                   {albums.map((album) => (
                     <li key={album.id} className="border-b border-white/10 pb-2 mb-2">
-                      <p><strong>{album.name}</strong> by {album.artists.map((artist: any) => artist.name).join(', ')}</p>
+                      <p><strong>{album.name}</strong> by {album.artists}</p>
                     </li>
                   ))}
                 </ul>
