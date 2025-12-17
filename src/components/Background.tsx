@@ -7,32 +7,41 @@ const Background: React.FC = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    video.playbackRate = 0.25;
+    let isReversing = false;
+    let animationId: number | null = null;
+    const playbackSpeed = 0.25;
 
-    const handleVideoEnd = () => {
-      video.currentTime = video.duration;
-      video.playbackRate = -0.25; 
-      video.play();
+    video.playbackRate = playbackSpeed;
+
+    const stepBackward = () => {
+      if (!video || !isReversing) return;
+
+      video.currentTime -= 0.016 * playbackSpeed;
+
+      if (video.currentTime <= 0) {
+        video.currentTime = 0;
+        isReversing = false;
+        video.playbackRate = playbackSpeed;
+        video.play().catch(console.error);
+        return;
+      }
+
+      animationId = requestAnimationFrame(stepBackward);
     };
 
-    const handleTimeUpdate = () => {
-      if (video.currentTime <= 0 && video.playbackRate < 0) {
-        // When reverse playback reaches start, play forward again
-        video.currentTime = 0;
-        video.playbackRate = 0.25;
-        video.play();
-      }
+    const handleVideoEnd = () => {
+      isReversing = true;
+      video.pause();
+      stepBackward();
     };
 
     video.addEventListener('ended', handleVideoEnd);
-    video.addEventListener('timeupdate', handleTimeUpdate);
-
-    // Start playing the video
     video.play().catch(console.error);
 
     return () => {
       video.removeEventListener('ended', handleVideoEnd);
-      video.removeEventListener('timeupdate', handleTimeUpdate);
+      if (animationId) cancelAnimationFrame(animationId);
+      video.pause();
     };
   }, []);
 

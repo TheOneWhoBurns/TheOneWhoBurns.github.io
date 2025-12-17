@@ -152,7 +152,6 @@ export class SpotifyAuth {
     const allAlbums: any[] = [];
     let url: string | null = 'https://api.spotify.com/v1/me/albums?limit=50';
 
-    // TODO(human): Implement pagination loop
     while (url) {
       const partialResponse = await fetch(url, {
         headers: {

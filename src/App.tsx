@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Background from './components/Background.tsx';
 import SpotifyLogin from './components/SpotifyLogin.tsx';
 import { SpotifyAuth } from './services/spotifyAuth.ts';
@@ -10,13 +10,13 @@ const App: React.FC = () => {
   const [albums, setAlbums] = useState<any[]>([]);
 
 
-  const handleLoginSuccess = (userInfo: any) => {
+  const handleLoginSuccess = useCallback((userInfo: any) => {
     setUser(userInfo);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     setUser(null);
-  };
+  }, []);
 
   const handleFetchAlbums = async () => {
     const token = SpotifyAuth.getAccessToken()
@@ -27,7 +27,7 @@ const App: React.FC = () => {
     }
 
     const albumsData = await SpotifyAuth.fetchUserAlbums();
-    setAlbums(albumsData.items);
+    setAlbums(albumsData);
   
   };
 
@@ -84,7 +84,7 @@ const App: React.FC = () => {
                 <ul className = "space-y-1">
                   {albums.map((item) => (
                     <li key={item.id} className="border-b border-white/10 pb-2 mb-2">
-                      <p><strong>{item.album.name}</strong> by {item.album.artists.map((artist: any) => artist.name).join(', ')}</p>
+                      <p><strong>{item.album.name}</strong> by {item.album.artists.name}</p>
                     </li>
                   ))}
                 </ul>
