@@ -1,5 +1,5 @@
 // Spotify OAuth 2.0 with PKCE flow
-const CLIENT_ID = process.env.REACT_APP_SPOTIFY_CLIENT_ID || "";
+const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || "";
 const REDIRECT_URI = 'https://theonewhoburns.github.io/callback';
 const SCOPES = [
   'user-read-private',
@@ -28,6 +28,8 @@ function base64encode(input: ArrayBuffer): string {
     .replace(/\+/g, '-')
     .replace(/\//g, '_');
 }
+
+
 
 export class SpotifyAuth {
   private static codeVerifier: string | null = null;
@@ -65,7 +67,6 @@ export class SpotifyAuth {
       throw new Error('No code verifier found in localStorage');
     }
 
-    // Exchange code for access token
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
       headers: {
@@ -86,12 +87,10 @@ export class SpotifyAuth {
 
     const data = await response.json();
     
-    // Store tokens
     localStorage.setItem('spotify_access_token', data.access_token);
     localStorage.setItem('spotify_refresh_token', data.refresh_token);
     localStorage.setItem('spotify_expires_at', (Date.now() + data.expires_in * 1000).toString());
 
-    // Clean up
     localStorage.removeItem('spotify_code_verifier');
 
     return data.access_token;
@@ -125,7 +124,6 @@ export class SpotifyAuth {
     return this.getAccessToken() !== null;
   }
 
-  // Test API call to verify authentication
   static async testConnection(): Promise<any> {
     const token = this.getAccessToken();
     if (!token) {
@@ -133,6 +131,25 @@ export class SpotifyAuth {
     }
 
     const response = await fetch('https://api.spotify.com/v1/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API call failed: ${response.status}`);
+    }
+
+    return response.json();
+  }
+
+  static async fetchUserAlbums(): Promise<any> {
+    const token = this.getAccessToken();
+    if (!token) {
+      throw new Error('No access token available');
+    }
+
+    const response = await fetch('https://api.spotify.com/v1/me/albums', {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

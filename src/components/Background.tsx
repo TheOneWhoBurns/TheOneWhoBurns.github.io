@@ -7,18 +7,14 @@ const Background: React.FC = () => {
     const video = videoRef.current;
     if (!video) return;
 
-    // Set playback rate to 0.25x (quarter speed)
     video.playbackRate = 0.25;
 
-    // Handle video end event to play in reverse
     const handleVideoEnd = () => {
-      // When video reaches the end, play in reverse by going backwards
       video.currentTime = video.duration;
-      video.playbackRate = -0.25; // Negative for reverse playback
+      video.playbackRate = -0.25; 
       video.play();
     };
 
-    // Handle when playing in reverse reaches the beginning
     const handleTimeUpdate = () => {
       if (video.currentTime <= 0 && video.playbackRate < 0) {
         // When reverse playback reaches start, play forward again

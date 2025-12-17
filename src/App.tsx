@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Background from './components/Background.tsx';
 import SpotifyLogin from './components/SpotifyLogin.tsx';
+import { SpotifyAuth } from './services/spotifyAuth.ts';
 
 interface NextStep {
   id: number;
@@ -10,6 +11,9 @@ interface NextStep {
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
 
+  const [albums, setAlbums] = useState<any[]>([]);
+
+
   const handleLoginSuccess = (userInfo: any) => {
     setUser(userInfo);
   };
@@ -18,14 +22,19 @@ const App: React.FC = () => {
     setUser(null);
   };
 
-  const nextSteps: NextStep[] = [
-    { id: 1, text: "Set up your React development environment ✅" },
-    { id: 2, text: "Register your app with Spotify Developer Dashboard ✅" },
-    { id: 3, text: "Implement Spotify OAuth with PKCE flow ✅" },
-    { id: 4, text: "Fetch user's saved albums via Spotify API" },
-    { id: 5, text: "Build the album shuffle logic" },
-    { id: 6, text: "Deploy your React build to replace this test page" }
-  ];
+  const handleFetchAlbums = async () => {
+    const token = SpotifyAuth.getAccessToken()
+
+    if (!token) {
+      console.error('No access token available');
+      return;
+    }
+
+    const albumsData = await SpotifyAuth.fetchUserAlbums();
+    setAlbums(albumsData.items);
+  
+  };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center text-white font-sans relative">
@@ -63,24 +72,15 @@ const App: React.FC = () => {
               )}
             </div>
           </div>
-        )}
+          )}
+          <div className="mt-4 text-xs">
+            <button 
+              className="px-4 py-2 bg-spotify-green hover:bg-spotify-green-light rounded-full text-white font-bold transition"
+              onClick={handleFetchAlbums}>
+              Fetch User Albums
+            </button>
+          </div>
         
-        <div className="mt-8 p-6 bg-white/5 rounded-lg text-left">
-          <h3 className="mb-4 text-green-400 font-semibold text-lg">
-            🚀 Next Steps:
-          </h3>
-          <ol className="ml-6 space-y-2">
-            {nextSteps.map((step) => (
-              <li key={step.id} className="leading-relaxed">
-                {step.text}
-              </li>
-            ))}
-          </ol>
-        </div>
-        
-        <footer className="mt-8 opacity-60 text-sm">
-          Ready to build something awesome! 🎧
-        </footer>
       </div>
     </div>
   );

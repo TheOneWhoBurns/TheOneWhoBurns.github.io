@@ -67,6 +67,8 @@ const SpotifyLogin: React.FC<SpotifyLoginProps> = ({ onLoginSuccess, onLogout })
   const handleLogin = async () => {
     setIsLoading(true);
     setError(null);
+
+    console.log('CLIENT_ID:', import.meta.env.VITE_SPOTIFY_CLIENT_ID);
     
     try {
       await SpotifyAuth.login();
