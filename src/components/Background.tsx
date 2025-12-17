@@ -9,19 +9,21 @@ const Background: React.FC = () => {
 
     let isReversing = false;
     let animationId: number | null = null;
-    const playbackSpeed = 0.5;
+    let lastTime = 0;
 
-    video.playbackRate = playbackSpeed;
-
-    const stepBackward = () => {
+    const stepBackward = (currentTime: number) => {
       if (!video || !isReversing) return;
 
-      video.currentTime -= 0.016 * playbackSpeed;
+      if (lastTime === 0) lastTime = currentTime;
+      const delta = (currentTime - lastTime) / 1000;
+      lastTime = currentTime;
+
+      video.currentTime -= delta;
 
       if (video.currentTime <= 0) {
         video.currentTime = 0;
         isReversing = false;
-        video.playbackRate = playbackSpeed;
+        lastTime = 0;
         video.play().catch(console.error);
         return;
       }
@@ -32,7 +34,7 @@ const Background: React.FC = () => {
     const handleVideoEnd = () => {
       isReversing = true;
       video.pause();
-      stepBackward();
+      animationId = requestAnimationFrame(stepBackward);
     };
 
     video.addEventListener('ended', handleVideoEnd);
