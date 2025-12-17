@@ -80,11 +80,11 @@ const App: React.FC = () => {
           <div>
             {albums.length > 0 && (
               <div className="mt-6 text-left">
-                <h3 className="text-xl font-bold mb-4"> User Albums:</h3>
+                <h3 className="text-xl font-bold mb-4">User Albums ({albums.length}):</h3>
                 <ul className = "space-y-1">
                   {albums.map((item) => (
                     <li key={item.id} className="border-b border-white/10 pb-2 mb-2">
-                      <p><strong>{item.album.name}</strong> by {item.album.artists.name}</p>
+                      <p><strong>{item.album.name}</strong> by {item.album.artists.map((a: any) => a.name).join(', ')}</p>
                     </li>
                   ))}
                 </ul>
