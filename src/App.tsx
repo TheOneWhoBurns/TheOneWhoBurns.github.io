@@ -73,12 +73,27 @@ const App: React.FC = () => {
             </div>
           </div>
           )}
-          <div className="mt-4 text-xs">
+          <div className="flex-3 text-xs">
             <button 
               className="px-4 py-2 bg-spotify-green hover:bg-spotify-green-light rounded-full text-white font-bold transition"
               onClick={handleFetchAlbums}>
               Fetch User Albums
             </button>
+          </div>
+
+          <div>
+            {albums.length > 0 && (
+              <div className="mt-6 text-left">
+                <h3 className="text-xl font-bold mb-4"> User Albums:</h3>
+                <ul className = "space-y-1">
+                  {albums.map((album) => (
+                    <li key={album.id} className="border-b border-white/10 pb-2 mb-2">
+                      <p><strong>{album.name}</strong> by {album.artists.map((artist: any) => artist.name).join(', ')}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}  
           </div>
         
       </div>
