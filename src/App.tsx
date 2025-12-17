@@ -3,10 +3,6 @@ import Background from './components/Background.tsx';
 import SpotifyLogin from './components/SpotifyLogin.tsx';
 import { SpotifyAuth } from './services/spotifyAuth.ts';
 
-interface NextStep {
-  id: number;
-  text: string;
-}
 
 const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);

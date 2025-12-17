@@ -1,0 +1,25 @@
+{
+  "short_name": "Album Shuffler",
+  "name": "Album Shuffler - Shuffle your albums, not just your songs",
+  "icons": [
+    {
+      "src": "Spotify_Album_Icon.png",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "Spotify_Album_Icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "Spotify_Album_Icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#1db954",
+  "background_color": "#191414"
+}
