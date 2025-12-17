@@ -1,64 +1,63 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 
 const Background: React.FC = () => {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const forwardRef = useRef<HTMLVideoElement>(null);
+  const reverseRef = useRef<HTMLVideoElement>(null);
+  const [activeVideo, setActiveVideo] = useState<'forward' | 'reverse'>('forward');
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const forward = forwardRef.current;
+    const reverse = reverseRef.current;
+    if (!forward || !reverse) return;
 
-    let isReversing = false;
-    let animationId: number | null = null;
-    let lastTime = 0;
-
-    const stepBackward = (currentTime: number) => {
-      if (!video || !isReversing) return;
-
-      if (lastTime === 0) lastTime = currentTime;
-      const delta = (currentTime - lastTime) / 1000;
-      lastTime = currentTime;
-
-      video.currentTime -= delta;
-
-      if (video.currentTime <= 0) {
-        video.currentTime = 0;
-        isReversing = false;
-        lastTime = 0;
-        video.play().catch(console.error);
-        return;
-      }
-
-      animationId = requestAnimationFrame(stepBackward);
+    const handleForwardEnd = () => {
+      setActiveVideo('reverse');
+      reverse.currentTime = 0;
+      reverse.play().catch(console.error);
     };
 
-    const handleVideoEnd = () => {
-      isReversing = true;
-      video.pause();
-      animationId = requestAnimationFrame(stepBackward);
+    const handleReverseEnd = () => {
+      setActiveVideo('forward');
+      forward.currentTime = 0;
+      forward.play().catch(console.error);
     };
 
-    video.addEventListener('ended', handleVideoEnd);
-    video.play().catch(console.error);
+    forward.addEventListener('ended', handleForwardEnd);
+    reverse.addEventListener('ended', handleReverseEnd);
+
+    forward.play().catch(console.error);
 
     return () => {
-      video.removeEventListener('ended', handleVideoEnd);
-      if (animationId) cancelAnimationFrame(animationId);
-      video.pause();
+      forward.removeEventListener('ended', handleForwardEnd);
+      reverse.removeEventListener('ended', handleReverseEnd);
+      forward.pause();
+      reverse.pause();
     };
   }, []);
 
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden">
       <video
-        ref={videoRef}
-        className="absolute top-0 left-0 w-full h-full object-cover"
+        ref={forwardRef}
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-100 ${
+          activeVideo === 'forward' ? 'opacity-100' : 'opacity-0'
+        }`}
         muted
-        loop={false} // We handle looping manually with reverse
         playsInline
         preload="auto"
       >
         <source src="/Gradient_BG.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
+      </video>
+      <video
+        ref={reverseRef}
+        className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-100 ${
+          activeVideo === 'reverse' ? 'opacity-100' : 'opacity-0'
+        }`}
+        muted
+        playsInline
+        preload="auto"
+      >
+        <source src="/Gradient_BG_reverse.mp4" type="video/mp4" />
       </video>
     </div>
   );
