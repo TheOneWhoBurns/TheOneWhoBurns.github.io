@@ -143,22 +143,31 @@ export class SpotifyAuth {
     return response.json();
   }
 
-  static async fetchUserAlbums(): Promise<any> {
+  static async fetchUserAlbums(): Promise<any[]> {
     const token = this.getAccessToken();
     if (!token) {
       throw new Error('No access token available');
     }
 
-    const response = await fetch('https://api.spotify.com/v1/me/albums', {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const allAlbums: any[] = [];
+    let url: string | null = 'https://api.spotify.com/v1/me/albums?limit=50';
 
-    if (!response.ok) {
-      throw new Error(`API call failed: ${response.status}`);
+    // TODO(human): Implement pagination loop
+    while (url) {
+      const partialResponse = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!partialResponse.ok) {
+        throw new Error(`API call failed: ${partialResponse.status}`);
+      }
+      const data = await partialResponse.json();
+      allAlbums.push(...data.items);
+      url = data.next;
     }
 
-    return response.json();
+    return allAlbums;
   }
 }
