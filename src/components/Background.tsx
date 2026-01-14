@@ -10,22 +10,33 @@ const Background: React.FC = () => {
       <div
         className="absolute blur-3xl"
         style={{
-          width: '70%',
-          height: '120%',
-          left: '-20%',
-          top: '-10%',
-          background: 'radial-gradient(ellipse 80% 60% at 30% 60%, #6b1f4a 0%, #3d1535 40%, transparent 70%)',
-          animation: 'purpleFloat 60s ease-in-out infinite',
+          width: '60%',
+          height: '100%',
+          left: '-15%',
+          top: '0%',
+          background: 'radial-gradient(ellipse 90% 70% at 25% 50%, #5c1a40 0%, #3a1230 45%, transparent 75%)',
+          animation: 'purpleFloat 80s ease-in-out infinite',
         }}
       />
       <div
         className="absolute blur-3xl"
         style={{
-          width: '50%',
-          height: '80%',
-          left: '-15%',
-          bottom: '-10%',
-          background: 'radial-gradient(ellipse 70% 80% at 40% 70%, #c94218 0%, #8b2d1a 30%, transparent 60%)',
+          width: '80%',
+          height: '50%',
+          left: '-10%',
+          top: '-5%',
+          background: 'radial-gradient(ellipse 100% 80% at 30% 50%, #4a1535 0%, transparent 75%)',
+          animation: 'purpleFloat 90s ease-in-out infinite reverse',
+        }}
+      />
+      <div
+        className="absolute blur-3xl"
+        style={{
+          width: '45%',
+          height: '90%',
+          left: '-10%',
+          bottom: '-5%',
+          background: 'radial-gradient(ellipse 80% 90% at 35% 65%, #d94a1a 0%, #a33815 35%, transparent 65%)',
           animation: 'orangeFloat 70s ease-in-out infinite',
         }}
       />
