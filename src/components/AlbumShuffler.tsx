@@ -35,14 +35,13 @@ function normalizeItem(item: SpotifyAlbum | SpotifyPlaylist, type: 'album' | 'pl
 export default function AlbumShuffler({ albums, playlists }: Props) {
   const [shuffleMode, setShuffleMode] = useState<ShuffleMode>('albums');
   const [selectedItem, setSelectedItem] = useState<ShuffleItem | null>(null);
-  const [visibleItems, setVisibleItems] = useState<ShuffleItem[]>([]);
   const [devices, setDevices] = useState<SpotifyDevice[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>('');
   const [isShuffling, setIsShuffling] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [slideKey, setSlideKey] = useState(0);
+  const [currentItem, setCurrentItem] = useState<ShuffleItem | null>(null);
   const shuffleRef = useRef<boolean>(false);
 
   const fetchDevices = useCallback(async () => {
@@ -76,14 +75,6 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     return pool;
   }, [shuffleMode, albums, playlists]);
 
-  const getRandomItems = useCallback((pool: ShuffleItem[], count: number): ShuffleItem[] => {
-    const items: ShuffleItem[] = [];
-    for (let i = 0; i < count; i++) {
-      items.push(pool[Math.floor(Math.random() * pool.length)]);
-    }
-    return items;
-  }, []);
-
   const handleShuffle = async () => {
     const pool = getItemPool();
     if (pool.length === 0) return;
@@ -91,21 +82,16 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     setIsShuffling(true);
     shuffleRef.current = true;
     setError(null);
+    setSelectedItem(null);
 
-    const totalIterations = 25;
-
-    for (let i = 0; i < totalIterations && shuffleRef.current; i++) {
-      const newItems = getRandomItems(pool, 5);
-      setVisibleItems(newItems);
-      setSlideKey(k => k + 1);
-
-      const delay = 80 + (i * i * 0.8);
-      await new Promise(r => setTimeout(r, delay));
+    for (let i = 0; i < 20 && shuffleRef.current; i++) {
+      setCurrentItem(pool[Math.floor(Math.random() * pool.length)]);
+      await new Promise(r => setTimeout(r, 50 + i * 8));
     }
 
     const finalItem = pool[Math.floor(Math.random() * pool.length)];
+    setCurrentItem(finalItem);
     setSelectedItem(finalItem);
-    setVisibleItems([finalItem]);
     setIsShuffling(false);
     shuffleRef.current = false;
   };
@@ -127,23 +113,7 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
   };
 
   const poolSize = getItemPool().length;
-
-  const getCardStyle = (index: number, total: number) => {
-    const center = Math.floor(total / 2);
-    const offset = index - center;
-    const absOffset = Math.abs(offset);
-
-    const scale = 1 - (absOffset * 0.15);
-    const translateX = offset * 70;
-    const zIndex = 10 - absOffset;
-    const opacity = 1 - (absOffset * 0.25);
-
-    return {
-      transform: `translateX(${translateX}px) scale(${scale})`,
-      zIndex,
-      opacity,
-    };
-  };
+  const displayItem = isShuffling ? currentItem : selectedItem;
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
@@ -163,35 +133,21 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
         ))}
       </div>
 
-      <div className="relative h-[280px] flex items-center justify-center overflow-hidden">
-        {isShuffling && visibleItems.length > 0 ? (
-          <div key={slideKey} className="relative w-full h-full flex items-center justify-center carousel-container">
-            {visibleItems.map((item, index) => (
-              <div
-                key={`${item.id}-${index}`}
-                className="absolute w-[180px] h-[180px] rounded-xl overflow-hidden shadow-2xl transition-all duration-150"
-                style={getCardStyle(index, visibleItems.length)}
-              >
-                <img
-                  src={item.imageUrl}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        ) : selectedItem ? (
+      <div className="relative h-[280px] flex items-center justify-center">
+        {displayItem ? (
           <div className="relative">
-            <div className="w-[220px] h-[220px] rounded-2xl overflow-hidden shadow-2xl glow-pulse border border-white/20">
+            <div className={`w-[220px] h-[220px] rounded-2xl overflow-hidden shadow-2xl border border-white/20 ${!isShuffling ? 'glow-pulse' : ''}`}>
               <img
-                src={selectedItem.imageUrl}
-                alt={selectedItem.name}
+                src={displayItem.imageUrl}
+                alt={displayItem.name}
                 className="w-full h-full object-cover"
               />
             </div>
-            <div className="absolute -bottom-2 -right-2 bg-spotify-green text-black text-xs font-bold px-2 py-1 rounded-full uppercase">
-              {selectedItem.type}
-            </div>
+            {!isShuffling && (
+              <div className="absolute -bottom-2 -right-2 bg-spotify-green text-black text-xs font-bold px-2 py-1 rounded-full uppercase">
+                {displayItem.type}
+              </div>
+            )}
           </div>
         ) : (
           <div className="w-[220px] h-[220px] rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center">
