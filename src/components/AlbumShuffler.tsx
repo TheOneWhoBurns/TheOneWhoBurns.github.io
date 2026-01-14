@@ -98,7 +98,8 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     setError(null);
 
     try {
-      await SpotifyAuth.startPlayback(selectedItem.uri, selectedDeviceId || undefined, true);
+      const shouldShuffle = selectedItem.type === 'playlist';
+      await SpotifyAuth.startPlayback(selectedItem.uri, selectedDeviceId || undefined, shouldShuffle);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Playback failed');
     } finally {

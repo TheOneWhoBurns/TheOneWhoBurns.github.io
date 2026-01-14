@@ -225,13 +225,16 @@ export class SpotifyAuth {
       throw new Error('No access token available');
     }
 
-    if (shuffle) {
-      await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=true${deviceId ? `&device_id=${deviceId}` : ''}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
+    await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=${shuffle}${deviceId ? `&device_id=${deviceId}` : ''}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    const body: any = { context_uri: contextUri };
+    if (!shuffle) {
+      body.offset = { position: 0 };
     }
 
     const response = await fetch(`https://api.spotify.com/v1/me/player/play${deviceId ? `?device_id=${deviceId}` : ''}`, {
@@ -240,7 +243,7 @@ export class SpotifyAuth {
         'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ context_uri: contextUri }),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok && response.status !== 204) {
