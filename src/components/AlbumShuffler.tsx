@@ -8,6 +8,11 @@ interface Props {
   playlists: SpotifyPlaylist[];
 }
 
+interface QueueItem {
+  uid: number;
+  item: ShuffleItem;
+}
+
 function normalizeItem(item: SpotifyAlbum | SpotifyPlaylist, type: 'album' | 'playlist'): ShuffleItem {
   if (type === 'album') {
     const album = (item as SpotifyAlbum).album;
@@ -32,6 +37,14 @@ function normalizeItem(item: SpotifyAlbum | SpotifyPlaylist, type: 'album' | 'pl
   }
 }
 
+const POSITION_STYLES = [
+  { x: -140, scale: 0.6, opacity: 0.3, z: 1 },
+  { x: -80, scale: 0.75, opacity: 0.6, z: 2 },
+  { x: 0, scale: 1, opacity: 1, z: 5 },
+  { x: 80, scale: 0.75, opacity: 0.6, z: 2 },
+  { x: 140, scale: 0.6, opacity: 0.3, z: 1 },
+];
+
 export default function AlbumShuffler({ albums, playlists }: Props) {
   const [shuffleMode, setShuffleMode] = useState<ShuffleMode>('albums');
   const [selectedItem, setSelectedItem] = useState<ShuffleItem | null>(null);
@@ -41,7 +54,8 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currentItem, setCurrentItem] = useState<ShuffleItem | null>(null);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const uidRef = useRef(0);
   const shuffleRef = useRef<boolean>(false);
 
   const fetchDevices = useCallback(async () => {
@@ -75,6 +89,15 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     return pool;
   }, [shuffleMode, albums, playlists]);
 
+  const createQueueItem = (item: ShuffleItem): QueueItem => ({
+    uid: uidRef.current++,
+    item,
+  });
+
+  const getRandomItem = (pool: ShuffleItem[]): ShuffleItem => {
+    return pool[Math.floor(Math.random() * pool.length)];
+  };
+
   const handleShuffle = async () => {
     const pool = getItemPool();
     if (pool.length === 0) return;
@@ -84,16 +107,29 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     setError(null);
     setSelectedItem(null);
 
-    for (let i = 0; i < 20 && shuffleRef.current; i++) {
-      setCurrentItem(pool[Math.floor(Math.random() * pool.length)]);
-      await new Promise(r => setTimeout(r, 50 + i * 8));
+    let currentQueue = Array.from({ length: 5 }, () => createQueueItem(getRandomItem(pool)));
+    setQueue(currentQueue);
+
+    await new Promise(r => setTimeout(r, 100));
+
+    for (let i = 0; i < 25 && shuffleRef.current; i++) {
+      const newItem = createQueueItem(getRandomItem(pool));
+      currentQueue = [...currentQueue.slice(1), newItem];
+      setQueue([...currentQueue]);
+
+      const delay = 80 + (i * i * 0.5);
+      await new Promise(r => setTimeout(r, delay));
     }
 
-    const finalItem = pool[Math.floor(Math.random() * pool.length)];
-    setCurrentItem(finalItem);
-    setSelectedItem(finalItem);
+    const centerItem = currentQueue[2].item;
+    setSelectedItem(centerItem);
     setIsShuffling(false);
     shuffleRef.current = false;
+  };
+
+  const handleSelectFromCarousel = (queueItem: QueueItem) => {
+    if (isShuffling) return;
+    setSelectedItem(queueItem.item);
   };
 
   const handlePlay = async () => {
@@ -113,7 +149,6 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
   };
 
   const poolSize = getItemPool().length;
-  const displayItem = isShuffling ? currentItem : selectedItem;
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
@@ -134,23 +169,42 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
       </div>
 
       <div className="relative h-[280px] flex items-center justify-center">
-        {displayItem ? (
-          <div className="relative">
-            <div className={`w-[220px] h-[220px] rounded-2xl overflow-hidden shadow-2xl border border-white/20 ${!isShuffling ? 'glow-pulse' : ''}`}>
-              <img
-                src={displayItem.imageUrl}
-                alt={displayItem.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            {!isShuffling && (
-              <div className="absolute -bottom-2 -right-2 bg-spotify-green text-black text-xs font-bold px-2 py-1 rounded-full uppercase">
-                {displayItem.type}
-              </div>
-            )}
+        {queue.length > 0 ? (
+          <div className="relative w-full h-full flex items-center justify-center">
+            {queue.map((queueItem, index) => {
+              const pos = POSITION_STYLES[index];
+              const isCenter = index === 2;
+              const isSelected = !isShuffling && selectedItem?.id === queueItem.item.id;
+
+              return (
+                <div
+                  key={queueItem.uid}
+                  onClick={() => handleSelectFromCarousel(queueItem)}
+                  className={`absolute w-[160px] h-[160px] rounded-xl overflow-hidden shadow-2xl transition-all duration-200 ease-out ${
+                    !isShuffling && !isCenter ? 'cursor-pointer hover:opacity-80' : ''
+                  } ${isSelected && !isShuffling ? 'ring-2 ring-spotify-green' : ''}`}
+                  style={{
+                    transform: `translateX(${pos.x}px) scale(${pos.scale})`,
+                    opacity: pos.opacity,
+                    zIndex: pos.z,
+                  }}
+                >
+                  <img
+                    src={queueItem.item.imageUrl}
+                    alt={queueItem.item.name}
+                    className="w-full h-full object-cover"
+                  />
+                  {isSelected && !isShuffling && (
+                    <div className="absolute -bottom-1 -right-1 bg-spotify-green text-black text-xs font-bold px-2 py-0.5 rounded-full uppercase">
+                      {queueItem.item.type}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         ) : (
-          <div className="w-[220px] h-[220px] rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center">
+          <div className="w-[200px] h-[200px] rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center">
             <div className="text-center text-white/40">
               <svg className="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
