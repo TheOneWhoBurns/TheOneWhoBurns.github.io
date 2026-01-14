@@ -5,15 +5,20 @@
   --color-spotify-green-light: #1ed760;
 }
 
-@keyframes shuffle-spin {
+@keyframes carousel-slide {
   0% {
-    transform: rotateY(0deg) scale(1);
+    transform: translateX(100px);
+    opacity: 0;
   }
-  50% {
-    transform: rotateY(180deg) scale(0.95);
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
   }
   100% {
-    transform: rotateY(360deg) scale(1);
+    transform: translateX(-100px);
+    opacity: 0;
   }
 }
 
@@ -26,10 +31,30 @@
   }
 }
 
-.shuffle-spin {
-  animation: shuffle-spin 0.2s ease-in-out;
+@keyframes fade-in-scale {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.carousel-container {
+  perspective: 1000px;
+}
+
+.carousel-item {
+  animation: carousel-slide 0.15s ease-out forwards;
+  backface-visibility: hidden;
 }
 
 .glow-pulse {
   animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.fade-in-scale {
+  animation: fade-in-scale 0.3s ease-out forwards;
 }
