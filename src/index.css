@@ -3,6 +3,57 @@
 @theme {
   --color-spotify-green: #1db954;
   --color-spotify-green-light: #1ed760;
+  --color-neu-base: #1a1a2e;
+  --color-neu-light: rgba(255, 255, 255, 0.08);
+  --color-neu-dark: rgba(0, 0, 0, 0.5);
+}
+
+.neu-raised {
+  background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.1));
+  box-shadow:
+    4px 4px 12px rgba(0, 0, 0, 0.4),
+    -4px -4px 12px rgba(255, 255, 255, 0.05);
+}
+
+.neu-raised:hover {
+  box-shadow:
+    6px 6px 16px rgba(0, 0, 0, 0.5),
+    -6px -6px 16px rgba(255, 255, 255, 0.06);
+}
+
+.neu-pressed {
+  background: linear-gradient(145deg, rgba(0,0,0,0.1), rgba(255,255,255,0.02));
+  box-shadow:
+    inset 3px 3px 8px rgba(0, 0, 0, 0.4),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.03);
+}
+
+.neu-raised-green {
+  background: linear-gradient(145deg, #22d661, #18a349);
+  box-shadow:
+    4px 4px 14px rgba(0, 0, 0, 0.4),
+    -4px -4px 14px rgba(29, 185, 84, 0.15),
+    0 0 20px rgba(29, 185, 84, 0.2);
+}
+
+.neu-raised-green:hover {
+  box-shadow:
+    6px 6px 18px rgba(0, 0, 0, 0.5),
+    -6px -6px 18px rgba(29, 185, 84, 0.2),
+    0 0 30px rgba(29, 185, 84, 0.3);
+}
+
+.neu-raised-green:active {
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.1);
+}
+
+.neu-input {
+  background: linear-gradient(145deg, rgba(0,0,0,0.2), rgba(255,255,255,0.02));
+  box-shadow:
+    inset 2px 2px 6px rgba(0, 0, 0, 0.3),
+    inset -2px -2px 6px rgba(255, 255, 255, 0.02);
 }
 
 @keyframes glow-pulse {

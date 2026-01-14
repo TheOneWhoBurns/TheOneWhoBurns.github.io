@@ -54,9 +54,13 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoadingDevices, setIsLoadingDevices] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [history, setHistory] = useState<QueueItem[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(2);
   const uidRef = useRef(0);
   const shuffleRef = useRef<boolean>(false);
+
+  const queue = history.slice(Math.max(0, currentIndex - 2), currentIndex + 3);
+  const queueOffset = Math.max(0, 2 - currentIndex);
 
   const fetchDevices = useCallback(async () => {
     setIsLoadingDevices(true);
@@ -107,42 +111,54 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     setError(null);
     setSelectedItem(null);
 
-    let currentQueue = Array.from({ length: 5 }, () => createQueueItem(getRandomItem(pool)));
-    setQueue(currentQueue);
+    let newHistory = Array.from({ length: 5 }, () => createQueueItem(getRandomItem(pool)));
+    let idx = 2;
+    setHistory(newHistory);
+    setCurrentIndex(idx);
 
     await new Promise(r => setTimeout(r, 100));
 
     for (let i = 0; i < 25 && shuffleRef.current; i++) {
       const newItem = createQueueItem(getRandomItem(pool));
-      currentQueue = [...currentQueue.slice(1), newItem];
-      setQueue([...currentQueue]);
+      newHistory = [...newHistory, newItem];
+      idx++;
+      setHistory([...newHistory]);
+      setCurrentIndex(idx);
 
       const delay = 80 + (i * i * 0.5);
       await new Promise(r => setTimeout(r, delay));
     }
 
-    const centerItem = currentQueue[2].item;
-    setSelectedItem(centerItem);
+    setSelectedItem(newHistory[idx].item);
     setIsShuffling(false);
     shuffleRef.current = false;
   };
 
-  const handleSelectFromCarousel = (queueItem: QueueItem, index: number) => {
-    if (isShuffling || index === 2) return;
+  const handleSelectFromCarousel = (_queueItem: QueueItem, visualIndex: number) => {
+    if (isShuffling) return;
 
-    const pool = getItemPool();
-    let newQueue = [...queue];
-    const shiftAmount = Math.abs(index - 2);
-    const newItems = Array.from({ length: shiftAmount }, () => createQueueItem(getRandomItem(pool)));
+    const actualIndex = visualIndex + queueOffset;
+    if (actualIndex === 2) return;
 
-    if (index < 2) {
-      newQueue = [...newItems, ...newQueue.slice(0, -shiftAmount)];
-    } else if (index > 2) {
-      newQueue = [...newQueue.slice(shiftAmount), ...newItems];
+    const shiftAmount = actualIndex - 2;
+
+    if (shiftAmount < 0) {
+      const newIndex = Math.max(2, currentIndex + shiftAmount);
+      setCurrentIndex(newIndex);
+      setSelectedItem(history[newIndex].item);
+    } else {
+      const pool = getItemPool();
+      let newHistory = [...history];
+      let newIndex = currentIndex + shiftAmount;
+
+      while (newHistory.length < newIndex + 3) {
+        newHistory = [...newHistory, createQueueItem(getRandomItem(pool))];
+      }
+
+      setHistory(newHistory);
+      setCurrentIndex(newIndex);
+      setSelectedItem(newHistory[newIndex].item);
     }
-
-    setQueue(newQueue);
-    setSelectedItem(queueItem.item);
   };
 
   const handlePlay = async () => {
@@ -165,15 +181,15 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
 
   return (
     <div className="w-full max-w-md mx-auto space-y-6">
-      <div className="flex justify-center gap-2">
+      <div className="flex justify-center gap-3">
         {(['albums', 'playlists', 'both'] as ShuffleMode[]).map((mode) => (
           <button
             key={mode}
             onClick={() => setShuffleMode(mode)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+            className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 ${
               shuffleMode === mode
-                ? 'bg-spotify-green text-black'
-                : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                ? 'neu-pressed text-spotify-green'
+                : 'neu-raised text-white/70 hover:text-white'
             }`}
           >
             {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -218,30 +234,30 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
             })}
           </div>
         ) : (
-          <div className="w-[200px] h-[200px] rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center">
-            <div className="text-center text-white/40">
-              <svg className="w-16 h-16 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
+          <div className="w-[200px] h-[200px] rounded-2xl neu-pressed flex items-center justify-center">
+            <div className="text-center text-white/30">
+              <svg className="w-14 h-14 mx-auto mb-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
               </svg>
-              <p>Hit shuffle to pick</p>
+              <p className="text-sm">Hit shuffle to pick</p>
             </div>
           </div>
         )}
       </div>
 
       {selectedItem && !isShuffling && (
-        <div className="text-center space-y-1">
-          <h3 className="text-xl font-bold text-white truncate px-4">
+        <div className="text-center space-y-1.5 py-2">
+          <h3 className="text-lg font-bold text-white/95 truncate px-4">
             {selectedItem.name}
           </h3>
-          <p className="text-white/60 text-sm truncate px-4">
+          <p className="text-white/50 text-sm truncate px-4">
             {selectedItem.subtitle}
           </p>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-500/20 border border-red-500/50 rounded-lg px-4 py-3 text-red-200 text-sm text-center">
+        <div className="neu-pressed rounded-xl px-4 py-3 text-red-400 text-sm text-center">
           {error}
         </div>
       )}
@@ -255,16 +271,16 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
       />
 
       {devices.length === 0 && !isLoadingDevices && (
-        <p className="text-white/50 text-sm text-center">
+        <p className="text-white/40 text-sm text-center">
           Open Spotify on any device to enable playback
         </p>
       )}
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         <button
           onClick={handleShuffle}
           disabled={isShuffling || poolSize === 0}
-          className="w-full py-4 rounded-full font-bold text-lg transition-all bg-gradient-to-r from-spotify-green to-spotify-green-light text-black hover:scale-[1.02] hover:shadow-lg hover:shadow-spotify-green/30 disabled:opacity-50 disabled:hover:scale-100 disabled:hover:shadow-none"
+          className="w-full py-4 rounded-2xl font-bold text-lg transition-all duration-200 neu-raised-green text-black disabled:opacity-40 disabled:pointer-events-none"
         >
           {isShuffling ? 'Shuffling...' : `Shuffle (${poolSize})`}
         </button>
@@ -272,7 +288,7 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
         <button
           onClick={handlePlay}
           disabled={!selectedItem || isPlaying || devices.length === 0 || isShuffling}
-          className="w-full py-4 rounded-full font-bold text-lg transition-all bg-white/10 text-white border border-white/20 hover:bg-white/20 hover:border-white/40 disabled:opacity-30 disabled:hover:bg-white/10 disabled:hover:border-white/20"
+          className="w-full py-4 rounded-2xl font-bold text-lg transition-all duration-200 neu-raised text-white/90 disabled:opacity-30 disabled:pointer-events-none"
         >
           {isPlaying ? (
             <span className="flex items-center justify-center gap-2">
