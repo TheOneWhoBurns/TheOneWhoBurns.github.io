@@ -1,106 +1,123 @@
-import React, { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import Background from './components/Background.tsx';
 import SpotifyLogin from './components/SpotifyLogin.tsx';
+import AlbumShuffler from './components/AlbumShuffler.tsx';
 import { SpotifyAuth } from './services/spotifyAuth.ts';
-import { useVirtualizer } from '@tanstack/react-virtual';
+import { SpotifyAlbum, SpotifyPlaylist } from './types/spotify.ts';
 
-const App: React.FC = () => {
+const App = () => {
   const [user, setUser] = useState<any>(null);
-  const [albums, setAlbums] = useState<any[]>([]);
-  const parentRef = useRef<HTMLDivElement>(null);
-
-  const virtualizer = useVirtualizer({
-    count: albums.length,
-    getScrollElement: () => parentRef.current,
-    estimateSize: () => 50,
-    overscan: 5,
-  });
-
+  const [albums, setAlbums] = useState<SpotifyAlbum[]>([]);
+  const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [libraryLoaded, setLibraryLoaded] = useState(false);
 
   const handleLoginSuccess = useCallback((userInfo: any) => {
     setUser(userInfo);
+    setLibraryLoaded(false);
+    setAlbums([]);
+    setPlaylists([]);
   }, []);
 
   const handleLogout = useCallback(() => {
     setUser(null);
+    setAlbums([]);
+    setPlaylists([]);
+    setLibraryLoaded(false);
   }, []);
 
-  const handleFetchAlbums = async () => {
-    const token = SpotifyAuth.getAccessToken()
+  const handleLoadLibrary = async () => {
+    const token = SpotifyAuth.getAccessToken();
+    if (!token) return;
 
-    if (!token) {
-      console.error('No access token available');
-      return;
+    setIsLoading(true);
+    try {
+      const [albumsData, playlistsData] = await Promise.all([
+        SpotifyAuth.fetchUserAlbums(),
+        SpotifyAuth.fetchUserPlaylists(),
+      ]);
+      setAlbums(albumsData);
+      setPlaylists(playlistsData);
+      setLibraryLoaded(true);
+    } catch (err) {
+      console.error('Failed to load library:', err);
+    } finally {
+      setIsLoading(false);
     }
-
-    const albumsData = await SpotifyAuth.fetchUserAlbums();
-    setAlbums(albumsData);
-  
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center text-white font-sans relative">
+    <div className="min-h-screen flex items-center justify-center text-white font-sans relative p-4">
       <Background />
-      <div className="text-center max-w-2xl p-8 bg-black/30 rounded-2xl backdrop-blur-sm border border-white/10">
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-spotify-green to-spotify-green-light bg-clip-text text-transparent">
-          🎵 Album Shuffler
-        </h1>
-        <p className="text-xl opacity-80 mb-8">
-          Shuffle your albums, not just your songs
-        </p>
-        
-        <div className="mb-6">
-          <SpotifyLogin onLoginSuccess={handleLoginSuccess} onLogout={handleLogout} />
+      <div className="w-full max-w-lg p-8 bg-black/40 rounded-3xl backdrop-blur-md border border-white/10 shadow-2xl">
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-spotify-green to-spotify-green-light bg-clip-text text-transparent">
+            Album Shuffler
+          </h1>
+          <p className="text-white/60">
+            Shuffle your albums, not just your songs
+          </p>
         </div>
-        
-        {user && (
-          <div className="mb-6 p-6 bg-green-900/20 rounded-lg border border-green-500/50">
-            <h3 className="text-xl font-bold text-green-400 mb-4">🎯 User Data Test Success!</h3>
-            <div className="text-left space-y-2 text-sm">
-              <p><strong>Display Name:</strong> {user.display_name || 'N/A'}</p>
-              <p><strong>Email:</strong> {user.email || 'N/A'}</p>
-              <p><strong>User ID:</strong> {user.id}</p>
-              <p><strong>Followers:</strong> {user.followers?.total || 0}</p>
-              <p><strong>Country:</strong> {user.country || 'N/A'}</p>
-              <p><strong>Subscription:</strong> {user.product || 'N/A'}</p>
-              {user.images && user.images[0] && (
-                <div className="mt-3">
-                  <img 
-                    src={user.images[0].url} 
-                    alt="Profile" 
-                    className="w-16 h-16 rounded-full"
-                  />
-                </div>
-              )}
-            </div>
+
+        {!user ? (
+          <div className="text-center">
+            <SpotifyLogin onLoginSuccess={handleLoginSuccess} onLogout={handleLogout} />
           </div>
-          )}
-          <div className="flex-3 text-xs">
-            <button 
-              className="px-4 py-2 bg-spotify-green hover:bg-spotify-green-light rounded-full text-white font-bold transition"
-              onClick={handleFetchAlbums}>
-              Fetch User Albums
+        ) : !libraryLoaded ? (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-xl">
+              {user.images?.[0] && (
+                <img
+                  src={user.images[0].url}
+                  alt="Profile"
+                  className="w-12 h-12 rounded-full"
+                />
+              )}
+              <div className="flex-1 text-left">
+                <p className="font-medium">{user.display_name}</p>
+                <p className="text-sm text-white/50">{user.email}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-sm text-red-400 hover:text-red-300 transition"
+              >
+                Logout
+              </button>
+            </div>
+
+            <button
+              onClick={handleLoadLibrary}
+              disabled={isLoading}
+              className="w-full py-4 rounded-full font-bold text-lg transition-all bg-gradient-to-r from-spotify-green to-spotify-green-light text-black hover:scale-[1.02] hover:shadow-lg hover:shadow-spotify-green/30 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                  </svg>
+                  Loading Library...
+                </span>
+              ) : (
+                'Load My Library'
+              )}
             </button>
           </div>
+        ) : (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between text-sm text-white/50">
+              <span>{albums.length} albums / {playlists.length} playlists</span>
+              <button
+                onClick={handleLogout}
+                className="text-red-400 hover:text-red-300 transition"
+              >
+                Logout
+              </button>
+            </div>
 
-          <div>
-            {albums.length > 0 && (
-              <div className="mt-6 text-left">
-                <h3 className="text-xl font-bold mb-4">User Albums ({albums.length}):</h3>
-                <div ref={parentRef} className="border border-white/10 rounded-lg overflow-auto" style={{ height: 400 }}>
-                  <div style={{ height: virtualizer.getTotalSize(), position: 'relative' }}>
-                    {virtualizer.getVirtualItems().map((row) => (
-                      <div key={row.index} className="p-2 border-b border-white/10 absolute w-full" style={{ height: row.size, transform: `translateY(${row.start}px)` }}>
-                        <strong>{albums[row.index].album.name}</strong> by {albums[row.index].album.artists.map((a: any) => a.name).join(', ')}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            )}  
+            <AlbumShuffler albums={albums} playlists={playlists} />
           </div>
-        
+        )}
       </div>
     </div>
   );

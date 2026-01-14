@@ -6,7 +6,9 @@ const SCOPES = [
   'user-read-email',
   'user-library-read',
   'playlist-read-private',
-  'playlist-read-collaborative'
+  'playlist-read-collaborative',
+  'user-read-playback-state',
+  'user-modify-playback-state'
 ].join(' ');
 
 // PKCE helper functions
@@ -168,5 +170,87 @@ export class SpotifyAuth {
     }
 
     return allAlbums;
+  }
+
+  static async fetchUserPlaylists(): Promise<any[]> {
+    const token = this.getAccessToken();
+    if (!token) {
+      throw new Error('No access token available');
+    }
+
+    const allPlaylists: any[] = [];
+    let url: string | null = 'https://api.spotify.com/v1/me/playlists?limit=50';
+
+    while (url) {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`API call failed: ${response.status}`);
+      }
+      const data = await response.json();
+      allPlaylists.push(...data.items);
+      url = data.next;
+    }
+
+    return allPlaylists;
+  }
+
+  static async getDevices(): Promise<any[]> {
+    const token = this.getAccessToken();
+    if (!token) {
+      throw new Error('No access token available');
+    }
+
+    const response = await fetch('https://api.spotify.com/v1/me/player/devices', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch devices: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.devices || [];
+  }
+
+  static async startPlayback(contextUri: string, deviceId?: string, shuffle: boolean = true): Promise<void> {
+    const token = this.getAccessToken();
+    if (!token) {
+      throw new Error('No access token available');
+    }
+
+    if (shuffle) {
+      await fetch(`https://api.spotify.com/v1/me/player/shuffle?state=true${deviceId ? `&device_id=${deviceId}` : ''}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+    }
+
+    const response = await fetch(`https://api.spotify.com/v1/me/player/play${deviceId ? `?device_id=${deviceId}` : ''}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ context_uri: contextUri }),
+    });
+
+    if (!response.ok && response.status !== 204) {
+      if (response.status === 403) {
+        throw new Error('Premium required for playback control');
+      }
+      if (response.status === 404) {
+        throw new Error('No active device found. Open Spotify on a device first.');
+      }
+      throw new Error(`Playback failed: ${response.status}`);
+    }
   }
 }
