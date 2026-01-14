@@ -15,7 +15,7 @@ export default function DeviceSelector({ devices, selectedDeviceId, onSelect, on
         <select
           value={selectedDeviceId}
           onChange={(e) => onSelect(e.target.value)}
-          className="w-full bg-black/50 border border-white/20 rounded-lg px-4 py-3 pr-10 text-white appearance-none cursor-pointer hover:border-spotify-green/50 focus:border-spotify-green focus:outline-none transition-colors"
+          className="w-full neu-input rounded-xl px-4 py-3 pr-10 text-white/90 appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-spotify-green/30 transition-all"
         >
           <option value="">Select a device...</option>
           {devices.map((device) => (
@@ -24,7 +24,7 @@ export default function DeviceSelector({ devices, selectedDeviceId, onSelect, on
             </option>
           ))}
         </select>
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/60">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-white/50">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
@@ -34,7 +34,7 @@ export default function DeviceSelector({ devices, selectedDeviceId, onSelect, on
       <button
         onClick={onRefresh}
         disabled={isLoading}
-        className="p-3 bg-black/50 border border-white/20 rounded-lg text-white hover:border-spotify-green/50 hover:text-spotify-green transition-all disabled:opacity-50"
+        className="p-3 neu-raised rounded-xl text-white/70 hover:text-spotify-green transition-all duration-200 disabled:opacity-50"
       >
         <svg
           className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`}
