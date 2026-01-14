@@ -1,1 +1,1 @@
-{"root":["./src/App.tsx","./src/main.tsx","./src/components/Background.tsx","./src/components/SpotifyLogin.tsx","./src/services/spotifyAuth.ts"],"version":"5.8.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/components/albumshuffler.tsx","./src/components/background.tsx","./src/components/deviceselector.tsx","./src/components/spotifylogin.tsx","./src/services/spotifyauth.ts","./src/types/spotify.ts"],"version":"5.8.3"}

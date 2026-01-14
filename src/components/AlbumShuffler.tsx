@@ -169,7 +169,7 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
             {visibleItems.map((item, index) => (
               <div
                 key={`${item.id}-${index}`}
-                className="absolute w-[180px] h-[180px] rounded-xl overflow-hidden shadow-2xl carousel-item"
+                className="absolute w-[180px] h-[180px] rounded-xl overflow-hidden shadow-2xl transition-all duration-150"
                 style={getCardStyle(index, visibleItems.length)}
               >
                 <img
