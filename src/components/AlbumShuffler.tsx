@@ -38,11 +38,11 @@ function normalizeItem(item: SpotifyAlbum | SpotifyPlaylist, type: 'album' | 'pl
 }
 
 const POSITION_STYLES = [
-  { x: -140, scale: 0.6, opacity: 0.3, z: 1 },
-  { x: -80, scale: 0.75, opacity: 0.6, z: 2 },
-  { x: 0, scale: 1, opacity: 1, z: 5 },
-  { x: 80, scale: 0.75, opacity: 0.6, z: 2 },
-  { x: 140, scale: 0.6, opacity: 0.3, z: 1 },
+  { x: -140, scale: 0.6, opacity: 0.3, z: 1, rotateY: 15, shadow: 'shadow-lg' },
+  { x: -80, scale: 0.75, opacity: 0.6, z: 2, rotateY: 8, shadow: 'shadow-xl' },
+  { x: 0, scale: 1, opacity: 1, z: 5, rotateY: 0, shadow: 'shadow-2xl' },
+  { x: 80, scale: 0.75, opacity: 0.6, z: 2, rotateY: -8, shadow: 'shadow-xl' },
+  { x: 140, scale: 0.6, opacity: 0.3, z: 1, rotateY: -15, shadow: 'shadow-lg' },
 ];
 
 export default function AlbumShuffler({ albums, playlists }: Props) {
@@ -127,8 +127,21 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
     shuffleRef.current = false;
   };
 
-  const handleSelectFromCarousel = (queueItem: QueueItem) => {
-    if (isShuffling) return;
+  const handleSelectFromCarousel = (queueItem: QueueItem, index: number) => {
+    if (isShuffling || index === 2) return;
+
+    const pool = getItemPool();
+    let newQueue = [...queue];
+    const shiftAmount = Math.abs(index - 2);
+    const newItems = Array.from({ length: shiftAmount }, () => createQueueItem(getRandomItem(pool)));
+
+    if (index < 2) {
+      newQueue = [...newItems, ...newQueue.slice(0, -shiftAmount)];
+    } else if (index > 2) {
+      newQueue = [...newQueue.slice(shiftAmount), ...newItems];
+    }
+
+    setQueue(newQueue);
     setSelectedItem(queueItem.item);
   };
 
@@ -168,9 +181,9 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
         ))}
       </div>
 
-      <div className="relative h-[280px] flex items-center justify-center">
+      <div className="relative h-[280px] flex items-center justify-center" style={{ perspective: '1000px' }}>
         {queue.length > 0 ? (
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div className="relative w-full h-full flex items-center justify-center" style={{ transformStyle: 'preserve-3d' }}>
             {queue.map((queueItem, index) => {
               const pos = POSITION_STYLES[index];
               const isCenter = index === 2;
@@ -179,14 +192,15 @@ export default function AlbumShuffler({ albums, playlists }: Props) {
               return (
                 <div
                   key={queueItem.uid}
-                  onClick={() => handleSelectFromCarousel(queueItem)}
-                  className={`absolute w-[160px] h-[160px] rounded-xl overflow-hidden shadow-2xl transition-all duration-200 ease-out ${
+                  onClick={() => handleSelectFromCarousel(queueItem, index)}
+                  className={`absolute w-[160px] h-[160px] rounded-xl overflow-hidden transition-all duration-200 ease-out ${pos.shadow} ${
                     !isShuffling && !isCenter ? 'cursor-pointer hover:opacity-80' : ''
                   } ${isSelected && !isShuffling ? 'ring-2 ring-spotify-green' : ''}`}
                   style={{
-                    transform: `translateX(${pos.x}px) scale(${pos.scale})`,
+                    transform: `translateX(${pos.x}px) scale(${pos.scale}) rotateY(${pos.rotateY}deg)`,
                     opacity: pos.opacity,
                     zIndex: pos.z,
+                    transformStyle: 'preserve-3d',
                   }}
                 >
                   <img
